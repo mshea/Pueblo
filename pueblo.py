@@ -58,6 +58,8 @@ def rebuildsite ():
 	textfiles = glob.glob(directory+"//*.txt") # We're looking for text files in the primary directory
 	for nonfile in nonentryfiles: textfiles.remove(directory+"/"+nonfile) # Except for non-entry files
 	indexdata = [] # Define the index var
+	
+	# Rip through the stack of .txt markdown files and build HTML pages from it.
 	for file in textfiles:
 		file = file.replace(directory+"\\", "") # Remove the path from the file
 		content = open(file).read() # Open up the file
@@ -77,12 +79,13 @@ def rebuildsite ():
 		# Build the HTML file, add a bit of footer text.
 		htmlfile = open(htmlfilenamefull, "w").write(minify(buildhtmlheader("article", title, date)+content+"<p>Send feedback to <a href=\"mailto:"+author_email+"\">"+author_email+"</a> or <a href=\"http://twitter.com/share?via="+twitter_tag+"&text="+urltitle+"\">share on twitter</a>.</p>"+buildhtmlfooter("article")))
 		indexdata.append([[numdate],[title],[summary],[htmlfilename],[content]]) # Build a list of lists so we can sort all our entries.
+
+	# The following section builds index.html, archive.html and index.xml.	
 	indexdata.sort()
 	indexdata.reverse()
 	indexbody=archivebody=rssbody="" # Initiate all body strings.
 	count=0 # Counter for index and RSS article increments
 	
-	# The following loop builds the index page and the RSS feed.	
 	for indexrow in indexdata:
 		dateobject = strptime(indexrow[0][0], "%Y-%m-%d") # Create a date object
 		rssdate = strftime("%a, %d %b %Y 06:%M:%S +0000", dateobject) # Generate an RSS friendly date format

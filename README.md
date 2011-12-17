@@ -1,6 +1,4 @@
-Title: Pueblo: Python Markdown Static Blogger
-Author: Mike Shea
-Date: 15 December 2011
+# Pueblo: Python Markdown Static Blogger
 
 ## 30 second summary
 

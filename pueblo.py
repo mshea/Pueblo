@@ -51,14 +51,14 @@ config = {
 	"minify_html": True, # set to True to remove line breaks from the HTML output
 }
 
-nonentryfiles = [] # a list of text files you DON'T want to process.
+nonentryfiles = ["robots.txt"] # a list of text files you DON'T want to process.
 
 # Main Program
 import glob, re, rfc822, time, cgi, datetime, markdown # The markdown module is the only non-default
 from time import gmtime, strftime, localtime, strptime
 def rebuildsite ():
 	textfiles = glob.glob(config["directory"]+"//*.txt") # We're looking for text files in the primary directory
-	for nonfile in nonentryfiles: textfiles.remove(directory+"/"+nonfile) # Except for non-entry files
+	for nonfile in nonentryfiles: textfiles.remove(config["directory"]+"/"+nonfile) # Except for non-entry files
 	indexdata = [] # Define the index var
 	
 	# Rip through the stack of .txt markdown files and build HTML pages from it.
@@ -107,7 +107,7 @@ def rebuildsite ():
 # Subroutine to build out the page's HTML header
 # Edit this to build your own HTML output
 def buildhtmlheader(type, title, date):
-	if config["header_image_url"] == "":
+	if config["header_image_url"] != "":
 		headerimage = "<img class=\"headerimg\" src=\""+config["header_image_url"]+"\" alt=\""+config["site_title"]+": "+config["site_description"]+"\" height=\""+config["header_image_height"]+"\" width=\""+config["header_image_width"]+"\" />\n"
 	htmlheader = "<!DOCTYPE html>\n<html>\n<head>\n<title>"+title+"</title>\n<link rel=\"stylesheet\" type=\"text/css\" media=\"screen and (min-width: 481px)\" href=\"style.css\">\n<link rel=\"stylesheet\" type=\"text/css\" media=\"only screen and (max-width: 480px)\" href=\"iphone.css\">\n<link rel=\"alternate\" type=\"application/rss+xml\" title=\"SlyFlourish.com\" href=\"index.xml\">\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n<meta name=\"viewport\" content=\"user-scalable=no, width=device-width\" />\n<meta name=\"apple-mobile-web-app-capable\" content=\"yes\" />\n<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black\" /><script type=\"text/javascript\">\nvar _gaq = _gaq || [];\n_gaq.push(['_setAccount', '"+config["google_analytics_tag"]+"']);\n_gaq.push(['_trackPageview']);\n(function() {  var ga = document.createElement('script');\n ga.type = 'text/javascript';\n ga.async = true;\nga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';\nvar s = document.getElementsByTagName('script')[0];\ns.parentNode.insertBefore(ga, s);\n})();\n</script>\n</head>\n<body>\n"
 	# Tons of conditional checks lay ahead. Does it use a header image and do you want the sidebar on article pages?
@@ -141,7 +141,7 @@ def minify(content):
 def buildhtmlfooter (type):
 	sidebardata = open(config["directory"]+"/sidebar.html").read()
 	htmlfooter = "\n</div>\n"
-	if type == "index" or config["sidebar_on_article_pages"]:
+	if type == "index" or type == "archive" or config["sidebar_on_article_pages"]:
 		htmlfooter += sidebardata
 	htmlfooter += "</body>\n</html>"
 	return htmlfooter

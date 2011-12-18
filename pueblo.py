@@ -80,7 +80,7 @@ def rebuildsite ():
 		postname = htmlfilename.replace(".html", "") # Not sure why we need this...
 		# Build the HTML file, add a bit of footer text.
 		htmlfile = open(htmlfilenamefull, "w").write(minify(buildhtmlheader("article", title, date)+content+"<p>Send feedback to <a href=\"mailto:"+config['author_email']+"\">"+config['author_email']+"</a> or <a href=\"http://twitter.com/share?via="+config['twitter_tag']+"&text="+urltitle+"\">share on twitter</a>.</p>"+buildhtmlfooter("article")))
-		indexdata.append([[numdate],[title],[summary],[htmlfilename],[content]]) # Build a list of lists so we can sort all our entries.
+		if numdate <= datetime.datetime.now().strftime("%Y-%m-%d"): indexdata.append([[numdate],[title],[summary],[htmlfilename],[content]]) # Build a list of lists so we can sort all our entries. Only add articles with dates from now and past so we don't post future articles. This lets us write draft articles with future dates that aren't posted until the day.
 
 	# The following section builds index.html, archive.html and index.xml.	
 	indexdata.sort()

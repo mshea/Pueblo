@@ -178,7 +178,6 @@ xmlns:dc="http://purl.org/dc/elements/1.1/\"
 	rssfile = open(config["directory"]+"/index.xml", "w").write(minify(rsscontent))
 		
 # Subroutine to build out the page's HTML header
-# Edit this to build your own HTML output
 def buildhtmlheader(type, title, date):
 	if config["header_image_url"] != "":
 		headerimage = """
@@ -191,7 +190,7 @@ def buildhtmlheader(type, title, date):
 		'header_image_width': config["header_image_width"],
 		}
 
-	htmlheader = """
+	htmlheader = ["""
 <!DOCTYPE html>
 <html>
 <head>
@@ -220,28 +219,54 @@ s.parentNode.insertBefore(ga, s);
 """ 	% { 
 		'title': title, 
 		'google_analytics_tag': config["google_analytics_tag"], 
-		}
+		} ]
 
-	# Tons of conditional checks lay ahead. Does it use a header image and do you want the sidebar on article pages?
+	# Tons of conditional checks lay ahead. Does it use a header image 
+	# and do you want the sidebar on article pages?
 	if config["sidebar_on_article_pages"] != True and type == "article":
-		htmlheader += "\n<div class=\"article_container\">\n"
+		htmlheader.append("\n<div class=\"article_container\">\n")
 	else:
-		htmlheader += "\n<div class=\"container\">\n"
+		htmlheader.append("\n<div class=\"container\">\n")
 	if config["header_image_url"] != "" and type == "index":
-		htmlheader += headerimage
+		htmlheader.append(headerimage)
 	elif config["header_image_url"] != "" and type != "index":
-		htmlheader += "<a href=\"/\">\n" + headerimage + "</a>\n"
+		htmlheader.append("<a href=\"/\">\n" + headerimage + "</a>\n")
 	elif config["header_image_url"] == "" and type == "index":
-		htmlheader += "<div class=\"header\">\n<h1>"+config["site_title"]+"</h1>\n<p>"+config["site_description"]+"</p>\n</div>"
+
+		htmlheader.append("""
+<div class="header">
+<h1>%(site_title)s</h1>
+<p>%(site_description)s</p>
+</div>
+""" 	% {
+		'site_title': config["site_title"],
+		'site_description': config["site_description"],
+		} )
+
 	elif config["header_image_url"] == "" and type != "index":
-		htmlheader += "\n<p class=\"return_link\"><a href=\"index.html\">"+config["site_title"]+"</a></p>\n"
+		htmlheader.append("""
+<p class="return_link">
+<a href="index.html">%(site_title)s</a>
+</p>
+"""		% {
+		'site_title': config["site_title"]
+		} )
 	if type == "index":
-		htmlheader += "\n<div class=\"article_list\">\n"
+		htmlheader.append("\n<div class=\"article_list\">\n")
 	elif type == "archive":
-		htmlheader += "\n<div class=\"article_list\">\n<h1>Article Archive</h1>\n"
+		htmlheader.append("\n<div class=\"article_list\">\n<h1>Article Archive</h1>\n")
 	elif type == "article":
-		htmlheader += "\n<div class=\"article\">\n<h1>" + title + "</h1>\n<p>by <a href=\""+config["author_bio_link"]+"\">"+config["author_name"]+"</a> on " + date +"</p>\n"
-	return htmlheader
+		htmlheader.append("""
+<div class="article">
+<h1>%(title)s</h1>
+<p>by <a href="%(author_bio_link)s">%(author_name)s</a> on %(date)s</p>
+"""		% {
+		'author_bio_link': config["author_bio_link"],
+		'title': title,
+		'author_name': config["author_name"],
+		'date': date,
+		} )
+	return "".join(htmlheader)
 
 # Subroutine to remove all line breaks to make for some packed fast HTML
 def minify(content):

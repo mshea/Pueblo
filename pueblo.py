@@ -34,8 +34,8 @@
 # View the output at index.html
 
 config = {
-	"directory": ".",
-	"site_url": "http://yoursite.net/",
+	"directory": ".", # No trailing slash.
+	"site_url": "http://yoursite.net/", # Must have a trailing slash.
 	"site_title": "Your Website",
 	"site_description": "Your blog tagline.",
 	"google_analytics_tag": "UA-111111-1",
@@ -99,17 +99,17 @@ def rebuildsite ():
 		dateobject = strptime(indexrow[0][0], "%Y-%m-%d")
 		rssdate = strftime("%a, %d %b %Y 06:%M:%S +0000", dateobject)
 		nicedate = strftime("%d %B %Y", dateobject)
-		articleitem = """
+		articleitem = '''
 <h2><a href="%(article_link)s">%(article_title)s</a></h2>
 <p>%(date)s - %(summary)s...</p>
-"""		% {
+'''		% {
 		'article_link': indexrow[3][0],
 		'article_title': indexrow[1][0],
 		'date': nicedate,
 		'summary': indexrow[2][0],
 		}
 
-		rssitem = """
+		rssitem = '''
 <item>
 <title>%(title)s</title>
 <link>%(link)s</link>
@@ -120,7 +120,7 @@ def rebuildsite ():
 <![CDATA[%(cdata)s]]>
 </content:encoded>
 </item>
-"""		% {
+'''		% {
 		'title': indexrow[1][0],
 		'link': config["site_url"]+indexrow[3][0],
 		'pubdate': rssdate,
@@ -139,18 +139,17 @@ def rebuildsite ():
 
 	indexdata = [buildhtmlheader("index", config["site_title"], "none")]
 	indexdata.append(indexbody)
-	indexdata.append("<h2><a href=\"archive.html\">View All %(article_count)s Articles</a></h2>\n</div>\n" 
+	indexdata.append("<h2><a href=\"archive.html\">View All %(article_count)s Articles</a></h2>\n" 
 		% { 'article_count': str(count) })
 	indexdata.append(buildhtmlfooter("index", ""))
 	indexfile = open(config["directory"]+"/index.html", "w").write(minify("".join(indexdata)))
 
 	archivedata = [buildhtmlheader("archive", config["site_title"]+" Article Archive", "none")]
 	archivedata.append(archivebody)
-	archivedata.append("\n</div>\n")
 	archivedata.append(buildhtmlfooter("archive", ""))
 	archivefile = open (config["directory"]+"/archive.html", "w").write(minify("".join(archivedata)))
 
-	rsscontent = """<?xml version="1.0" encoding="UTF-8"?>
+	rsscontent = '''<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"
 xmlns:atom="http://www.w3.org/2005/Atom"
 xmlns:content="http://purl.org/rss/1.0/modules/content/"
@@ -167,7 +166,7 @@ xmlns:dc="http://purl.org/dc/elements/1.1/\"
 %(rssbody)s
 </channel>
 </rss>
-"""	% {
+'''	% {
 	'site_url': config["site_url"],
 	'site_title': config["site_title"],
 	'site_description': config["site_description"],
@@ -179,18 +178,7 @@ xmlns:dc="http://purl.org/dc/elements/1.1/\"
 		
 # Subroutine to build out the page's HTML header
 def buildhtmlheader(type, title, date):
-	if config["header_image_url"] != "":
-		headerimage = """
-<img class="headerimg" src="%(header_image_url)s" alt="%(site_title)s: %(site_description)s" height="%(header_image_height)s" width="%(header_image_width)s" />
-""" 	% {
-		'header_image_url': config["header_image_url"],
-		'site_title': config["site_title"],
-		'site_description': config["site_description"],
-		'header_image_height': config["header_image_height"],
-		'header_image_width': config["header_image_width"],
-		}
-
-	htmlheader = ["""
+	htmlheader = ['''
 <!DOCTYPE html>
 <html>
 <head>
@@ -216,51 +204,65 @@ s.parentNode.insertBefore(ga, s);
 </script>
 </head>
 <body>
-""" 	% { 
+''' 	% {
 		'title': title, 
 		'google_analytics_tag': config["google_analytics_tag"], 
 		} ]
 
 	# Tons of conditional checks lay ahead. Does it use a header image 
-	# and do you want the sidebar on article pages?
+
+	# Do we want a header image? If so, build it out.
+	if config["header_image_url"] != "":
+		headerimage = '''
+<img class="headerimg" src="%(header_image_url)s" alt="%(site_title)s: %(site_description)s" height="%(header_image_height)s" width="%(header_image_width)s" />
+''' 	% {
+		'header_image_url': config["header_image_url"],
+		'site_title': config["site_title"],
+		'site_description': config["site_description"],
+		'header_image_height': config["header_image_height"],
+		'header_image_width': config["header_image_width"],
+		}
+
 	if config["sidebar_on_article_pages"] != True and type == "article":
 		htmlheader.append("\n<div class=\"article_container\">\n")
 	else:
 		htmlheader.append("\n<div class=\"container\">\n")
+
+	# This controls the actions of the header image. Don't link it on the homepage.
 	if config["header_image_url"] != "" and type == "index":
 		htmlheader.append(headerimage)
 	elif config["header_image_url"] != "" and type != "index":
 		htmlheader.append("<a href=\"/\">\n" + headerimage + "</a>\n")
 	elif config["header_image_url"] == "" and type == "index":
-
-		htmlheader.append("""
+		htmlheader.append('''
 <div class="header">
 <h1>%(site_title)s</h1>
 <p>%(site_description)s</p>
 </div>
-""" 	% {
+''' 	% {
 		'site_title': config["site_title"],
 		'site_description': config["site_description"],
 		} )
-
 	elif config["header_image_url"] == "" and type != "index":
-		htmlheader.append("""
+		htmlheader.append('''
 <p class="return_link">
 <a href="index.html">%(site_title)s</a>
 </p>
-"""		% {
+'''		% {
 		'site_title': config["site_title"]
 		} )
+
+	# What does the rest of the header look like for each page type?
 	if type == "index":
 		htmlheader.append("\n<div class=\"article_list\">\n")
 	elif type == "archive":
 		htmlheader.append("\n<div class=\"article_list\">\n<h1>Article Archive</h1>\n")
 	elif type == "article":
-		htmlheader.append("""
+		htmlheader.append('''
 <div class="article">
 <h1>%(title)s</h1>
 <p>by <a href="%(author_bio_link)s">%(author_name)s</a> on %(date)s</p>
-"""		% {
+'''		% {
 		'author_bio_link': config["author_bio_link"],
 		'title': title,
 		'author_name': config["author_name"],
@@ -268,7 +270,7 @@ s.parentNode.insertBefore(ga, s);
 		} )
 	return "".join(htmlheader)
 
-# Subroutine to remove all line breaks to make for some packed fast HTML
+# Remove all line breaks for minified HTML and XML output.
 def minify(content):
 	if config["minify_html"]:
 		content = re.sub("\n","",content)
@@ -277,20 +279,23 @@ def minify(content):
 # Subroutine to build out the footer.
 def buildhtmlfooter (type, urltitle):
 	footer_parts = []
-	sidebardata = open(config["directory"]+"/sidebar.html").read()
-	if type == "index" or type == "archive" or config["sidebar_on_article_pages"]:
-		footer_parts.append(sidebardata)
 	if type == "article":
 		footer_parts.append(
 '''
 <p>Send feedback to <a href="mailto:%(email)s">%(email)s</a> or <a href="http://twitter.com/share?via=%(twitter_tag)s&text=%(urltitle)s">share on twitter</a>.</p>
-''' 	
-		% {
+'''		% {
 		'email': config['author_email'], 
 		'twitter_tag': config['twitter_tag'], 
 		'urltitle': urltitle,
 		})
-	footer_parts.append("\n</div>\n</body>\n</html>")
+	footer_parts.append("\n</div>")
+
+	sidebardata = open(config["directory"]+"/sidebar.html").read()
+
+	if type == "index" or type == "archive" or config["sidebar_on_article_pages"]:
+		footer_parts.append(sidebardata)
+	footer_parts.append("\n</body>\n</html>")
+
 	return "".join(footer_parts)
 
 # This program is designed to run as a CGI script so you can rebuild your site by hitting a URL.

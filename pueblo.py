@@ -48,7 +48,7 @@ config = {
 	"header_image_width": "",
 	"header_image_height": "",
 	"sidebar_on_article_pages": False,
-	"minify_html": True,
+	"minify_html": False,
 }
 
 nonentryfiles = []
@@ -80,9 +80,11 @@ def rebuildsite ():
 		htmlfilename = htmlfilename.replace(config["directory"]+"/", "")
 		postname = htmlfilename.replace(".html", "")
 		# Build the HTML file, add a bit of footer text.
-		htmlcontent = buildhtmlheader("article", title, date)
+		htmlcontent = [buildhtmlheader("article", title, date)]
+		htmlcontent.append(content)
+		htmlcontent.append(buildhtmlfooter("article", urltitle))
 		htmlfile = open(htmlfilenamefull, "w")
-		htmlfile.write(minify(buildhtmlheader("article", title, date)+content+buildhtmlfooter("article", urltitle)))
+		htmlfile.write(minify("".join(htmlcontent)))
 		htmlfile.close()
 		if numdate <= datetime.datetime.now().strftime("%Y-%m-%d"):
 			indexdata.append([[numdate],[title],[summary],[htmlfilename],[content]])
@@ -134,8 +136,20 @@ def rebuildsite ():
 		archivebody = archivebody + articleitem
 	sidebardata = open(config["directory"]+"/sidebar.html").read()
 	rssdatenow = rfc822.formatdate()
-	indexfile = open (config["directory"]+"/index.html", "w").write(minify(buildhtmlheader("index", config["site_title"], "none")+indexbody+"\n<h2><a href=\"archive.html\">View All "+str(count)+" Articles</a></h2>\n"+buildhtmlfooter("index", "")))
-	archivefile = open (config["directory"]+"/archive.html", "w").write(minify(buildhtmlheader("archive", config["site_title"]+" Article Archive", "none")+archivebody+"\n"+ buildhtmlfooter("archive", "")))
+
+	indexdata = [buildhtmlheader("index", config["site_title"], "none")]
+	indexdata.append(indexbody)
+	indexdata.append("<h2><a href=\"archive.html\">View All %(article_count)s Articles</a></h2>\n</div>\n" 
+		% { 'article_count': str(count) })
+	indexdata.append(buildhtmlfooter("index", ""))
+	indexfile = open(config["directory"]+"/index.html", "w").write(minify("".join(indexdata)))
+
+	archivedata = [buildhtmlheader("archive", config["site_title"]+" Article Archive", "none")]
+	archivedata.append(archivebody)
+	archivedata.append("\n</div>\n")
+	archivedata.append(buildhtmlfooter("archive", ""))
+	archivefile = open (config["directory"]+"/archive.html", "w").write(minify("".join(archivedata)))
+
 	rsscontent = """<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"
 xmlns:atom="http://www.w3.org/2005/Atom"
@@ -237,7 +251,7 @@ def minify(content):
 	
 # Subroutine to build out the footer.
 def buildhtmlfooter (type, urltitle):
-	footer_parts = ["\n</div>\n"]
+	footer_parts = []
 	sidebardata = open(config["directory"]+"/sidebar.html").read()
 	if type == "index" or type == "archive" or config["sidebar_on_article_pages"]:
 		footer_parts.append(sidebardata)
@@ -251,7 +265,7 @@ def buildhtmlfooter (type, urltitle):
 		'twitter_tag': config['twitter_tag'], 
 		'urltitle': urltitle,
 		})
-	footer_parts.append("\n</body>\n</html>")
+	footer_parts.append("\n</div>\n</body>\n</html>")
 	return "".join(footer_parts)
 
 # This program is designed to run as a CGI script so you can rebuild your site by hitting a URL.

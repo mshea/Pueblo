@@ -34,7 +34,7 @@
 # View the output at index.html
 
 config = {
-	"directory": ".", # No trailing slash.
+	"directory": ".", # No trailing slash. Example: /usr/home/mshea
 	"site_url": "http://yoursite.net/", # Must have a trailing slash.
 	"site_title": "Your Website",
 	"site_description": "Your blog tagline.",
@@ -54,8 +54,15 @@ config = {
 nonentryfiles = []
 
 # Main Program
-import glob, re, rfc822, time, cgi, datetime, markdown
+import glob
+import re
+import rfc822
+import time
+import cgi
+import datetime
+import markdown
 from time import gmtime, strftime, localtime, strptime
+
 def rebuildsite ():
 	textfiles = glob.glob(config["directory"]+"//*.txt")
 	for nonfile in nonentryfiles:
@@ -136,8 +143,10 @@ def rebuildsite ():
 		archivebody = archivebody + articleitem
 	sidebardata = open(config["directory"]+"/sidebar.html").read()
 	rssdatenow = rfc822.formatdate()
+	
+	indextitle = config["site_title"] + ": " + config["site_description"]
 
-	indexdata = [buildhtmlheader("index", config["site_title"], "none")]
+	indexdata = [buildhtmlheader("index", indextitle, "none")]
 	indexdata.append(indexbody)
 	indexdata.append("<h2><a href=\"archive.html\">View All %(article_count)s Articles</a></h2>\n" 
 		% { 'article_count': str(count) })
@@ -233,11 +242,11 @@ s.parentNode.insertBefore(ga, s);
 		htmlheader.append(headerimage)
 	elif config["header_image_url"] != "" and type != "index":
 		htmlheader.append("<a href=\"/\">\n" + headerimage + "</a>\n")
-	elif config["header_image_url"] == "" and type == "index":
+	if type == "index":
 		htmlheader.append('''
-<div class="header">
+<div class="index_header">
 <h1>%(site_title)s</h1>
-<p>%(site_description)s</p>
+<p class="site_description">%(site_description)s</p>
 </div>
 ''' 	% {
 		'site_title': config["site_title"],

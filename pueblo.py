@@ -80,8 +80,15 @@ def rebuildsite ():
 		author = lines[1].replace("Author: ","")
 		date = re.sub("(  )|(\n)|(Date: )","",lines[2])
 		numdate = strftime("%Y-%m-%d", strptime(date, "%d %B %Y"))
-		# Add Troll and Toad referral link for Sly Flourish - You can change this to any link referral you want.
-		content = re.sub("http://[www\.]*trollandtoad\.com/(.*?)\"", "http://www.trollandtoad.com/\\1?associateid=120_1\"", content)
+
+		# Add Troll and Toad referral link for Sly Flourish - 
+		# This is some messy stuff just used for my site so you can likely remove it and never worry.
+		# I only needed it to add a specific referral to all links in the site.
+		content = re.sub("\?associateid=120_1", "", content) # Remove any existing referrals.
+		content = re.sub("http://www\.trollandtoad\.com/(.*?)\.html", 
+		                 "http://www.trollandtoad.com/\\1.html?associateid=120_1", content)
+		# End of hacky referral code
+
 		content = markdown.markdown(re.sub("(Title:.*\n)|(Author:.*\n)|(Date:.*\n\n)|    ", "", content))
 		summary = re.sub("<[^<]+?>","", content)
 		summary = summary.replace("\n", " ")[0:200]

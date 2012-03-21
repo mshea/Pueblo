@@ -2,7 +2,7 @@
 #
 # Pueblo: Python Markdown Static Blogger
 #
-# 17 December 2011
+# 12 March 2012
 #
 # A single Python script to build a simple blog from a directory full of markdown files.
 #
@@ -32,28 +32,30 @@
 # Put your static markdown .txt files in the configured directory
 # Run the script either manually, with a regular cronjob, or as a CGI script.
 # View the output at index.html
+#
+# Updated 12 March 2012: Removed header image. Text is good enough, 
+#  better for SEO, and faster.
 
 config = {
-	"directory": ".", # No trailing slash. Example: /usr/home/mshea
-	"site_url": "http://yoursite.net/", # Must have a trailing slash.
-	"site_title": "Your Website",
-	"site_description": "Your blog tagline.",
-	"google_analytics_tag": "UA-111111-1",
-	"author_name": "Your Name",
-	"author_bio_link": "about.html",
-	"amazon_tag": "mikesheanet-20",
-	"twitter_tag": "twitterid",
-	"author_email": "your@emailaddress.com",
-	"header_image_url": "",
+	"directory": "/usr/www/users/pl569", # Your markdown files and the output go here. No trailing slash.
+	"site_url": "http://mikeshea.net/", # site URL including an ending backslash.
+	"site_title": "Mike Shea's Website", # used for the RSS feed's title.
+	"site_description": "Writing, Digital Publishing, Web Technology, Apple, Getting Things Done, Video Games, Fountain Pens, Science Fiction and Fantasy", # used for the RSS feed's description.
+	"google_analytics_tag": "UA-132483-1", # used to track the site with Google Analytics.
+	"author_name": "Mike Shea",
+	"author_bio_link": "About_Mike_Shea.html", # relative or absolute depending on where you keep it.
+	"amazon_tag": "mikesheanet-20", # Your tag to Amazon, used in the article footer and RSS feed.
+	"twitter_tag": "mshea", # The twitter tag to which you want tweeted articles referenced.
+	"author_email": "mike@mikeshea.net", # The feedback email address.
+	"header_image_url": "", # Blank if no header image. (Default for style.css and iphone.css)
 	"header_image_width": "",
 	"header_image_height": "",
-	"sidebar_on_article_pages": False,
-	"minify_html": False,
+	"sidebar_on_article_pages": False, # Show the sidebar on all pages. Anything but 1 will only show it on the homepage.
+	"minify_html": False, # set to True to remove line breaks from the HTML output
 }
 
-nonentryfiles = []
+nonentryfiles = ["robots.txt"] # a list of text files you DON'T want to process.
 
-# Main Program
 import glob
 import re
 import rfc822
@@ -205,7 +207,7 @@ def buildhtmlheader(type, title, date):
 <link rel="stylesheet" type="text/css" media="only screen and (max-width: 480px)" href="iphone.css">
 <link rel="alternate" type="application/rss+xml" title="%(title)s" href="index.xml">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="viewport" content="user-scalable=no, width=device-width" />
+<meta name="viewport" content="user-scalable=yes, width=device-width" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 <script type="text/javascript">
@@ -227,30 +229,11 @@ s.parentNode.insertBefore(ga, s);
 		'google_analytics_tag': config["google_analytics_tag"], 
 		} ]
 
-	# Tons of conditional checks lay ahead. Does it use a header image 
-
-	# Do we want a header image? If so, build it out.
-	if config["header_image_url"] != "":
-		headerimage = '''
-<img class="headerimg" src="%(header_image_url)s" alt="%(site_title)s: %(site_description)s" height="%(header_image_height)s" width="%(header_image_width)s" />
-''' 	% {
-		'header_image_url': config["header_image_url"],
-		'site_title': config["site_title"],
-		'site_description': config["site_description"],
-		'header_image_height': config["header_image_height"],
-		'header_image_width': config["header_image_width"],
-		}
-
 	if config["sidebar_on_article_pages"] != True and type == "article":
 		htmlheader.append("\n<div class=\"article_container\">\n")
 	else:
 		htmlheader.append("\n<div class=\"container\">\n")
 
-	# This controls the actions of the header image. Don't link it on the homepage.
-	if config["header_image_url"] != "" and type == "index":
-		htmlheader.append(headerimage)
-	elif config["header_image_url"] != "" and type != "index":
-		htmlheader.append("<a href=\"/\">\n" + headerimage + "</a>\n")
 	if type == "index":
 		htmlheader.append('''
 <div class="index_header">
@@ -261,7 +244,7 @@ s.parentNode.insertBefore(ga, s);
 		'site_title': config["site_title"],
 		'site_description': config["site_description"],
 		} )
-	elif config["header_image_url"] == "" and type != "index":
+	else:
 		htmlheader.append('''
 <p class="return_link">
 <a href="index.html">%(site_title)s</a>

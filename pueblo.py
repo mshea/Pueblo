@@ -37,21 +37,18 @@
 #  better for SEO, and faster.
 
 config = {
-	"directory": "/usr/www/users/pl569", # Your markdown files and the output go here. No trailing slash.
-	"site_url": "http://mikeshea.net/", # site URL including an ending backslash.
-	"site_title": "Mike Shea's Website", # used for the RSS feed's title.
-	"site_description": "Writing, Digital Publishing, Web Technology, Apple, Getting Things Done, Video Games, Fountain Pens, Science Fiction and Fantasy", # used for the RSS feed's description.
-	"google_analytics_tag": "UA-132483-1", # used to track the site with Google Analytics.
-	"author_name": "Mike Shea",
-	"author_bio_link": "About_Mike_Shea.html", # relative or absolute depending on where you keep it.
+	"directory": "/absolute/path/to/data/files", # Your markdown files and the output go here. No trailing slash.
+	"site_url": "http://yoururl.net/", # site URL including an ending backslash.
+	"site_title": "Your Site Title", # used for the RSS feed's title.
+	"site_description": "Description of your site", # used for the RSS feed's description.
+	"google_analytics_tag": "UA-XXXXX-1", # used to track the site with Google Analytics.
+	"author_name": "Your Name",
+	"author_bio_link": "your_about_page.html", # relative or absolute depending on where you keep it.
 	"amazon_tag": "mikesheanet-20", # Your tag to Amazon, used in the article footer and RSS feed.
-	"twitter_tag": "mshea", # The twitter tag to which you want tweeted articles referenced.
-	"author_email": "mike@mikeshea.net", # The feedback email address.
-	"header_image_url": "", # Blank if no header image. (Default for style.css and iphone.css)
-	"header_image_width": "",
-	"header_image_height": "",
+	"twitter_tag": "twitterhandle", # The twitter tag to which you want tweeted articles referenced.
+	"author_email": "your@email.com", # The feedback email address.
 	"sidebar_on_article_pages": False, # Show the sidebar on all pages. Anything but 1 will only show it on the homepage.
-	"minify_html": False, # set to True to remove line breaks from the HTML output
+	"minify_html": False, # set to True to remove line breaks from the HTML output for speed
 }
 
 nonentryfiles = ["robots.txt"] # a list of text files you DON'T want to process.

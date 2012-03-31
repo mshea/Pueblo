@@ -35,6 +35,9 @@
 #
 # Updated 12 March 2012: Removed header image. Text is good enough, 
 #  better for SEO, and faster.
+#
+# Updated 29 March 2012: Removed iPhone stylesheet. Use @media in the CSS
+# 	
 
 config = {
 	"directory": "/absolute/path/to/data/files", # Your markdown files and the output go here. No trailing slash.
@@ -51,8 +54,9 @@ config = {
 	"minify_html": False, # set to True to remove line breaks from the HTML output for speed
 }
 
-nonentryfiles = ["robots.txt"] # a list of text files you DON'T want to process.
+nonentryfiles = [] # a list of text files you DON'T want to process.
 
+# Main Program
 import glob
 import re
 import rfc822
@@ -200,13 +204,10 @@ def buildhtmlheader(type, title, date):
 <html>
 <head>
 <title>%(title)s</title>
-<link rel="stylesheet" type="text/css" media="screen and (min-width: 481px)" href="style.css">
-<link rel="stylesheet" type="text/css" media="only screen and (max-width: 480px)" href="iphone.css">
+<link rel="stylesheet" type="text/css" href="style.css">
 <link rel="alternate" type="application/rss+xml" title="%(title)s" href="index.xml">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="viewport" content="user-scalable=yes, width=device-width" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black" />
 <script type="text/javascript">
 var _gaq = _gaq || [];
 _gaq.push(['_setAccount', '%(google_analytics_tag)s']);

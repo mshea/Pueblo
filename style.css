@@ -1,4 +1,4 @@
-@media all and (max-width: 750px) {
+@media all and (max-width: 700px) {
 
 body {
 padding: 0;
@@ -13,9 +13,14 @@ margin: 0px;
 }
 
 .article_list, .article {
-margin: auto;
+margin: 0 auto;
 padding: 0px;
 width: 100%;
+}
+
+.article_container {
+padding: .5em;
+margin: 0em;
 }
 
 .sidebar {
@@ -30,7 +35,7 @@ margin: auto;
 
 } /* end mid-sized media */
 
-@media all and (min-width: 751px) { /* Full sized media */
+@media all and (min-width: 701px) { /* Full sized media */
 
 body {
 padding-top: .5em;
@@ -76,7 +81,6 @@ clear:both
 }
 
 .article_container {
-padding:1em;
 background:#fff
 }
 
@@ -88,6 +92,7 @@ padding:0
 .article_list {
 float:left;
 margin:0 auto;
+padding-top: 0;
 background:#fff
 }
 
@@ -119,6 +124,8 @@ font-weight:normal;
 font-size:1.3em;
 color:#555;
 line-height:1.5em;
+padding: 0;
+margin: 0;
 }
 
 h3 {
@@ -154,5 +161,7 @@ text-align:center;
 padding-bottom: .5em;
 }
 
-
+.site_description {
+font-size: .8em;
+}
 

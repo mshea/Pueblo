@@ -1,6 +1,49 @@
 #!/usr/local/bin/python
-#
+
+config = {
+	"directory": "/directory/to/your/markdown/files", # Your markdown files and the output go here. No trailing slash.
+	"site_url": "http://yoururl.com/", # site URL including an ending backslash.
+	"site_title": "your title", # used for the RSS feed's title.
+	"site_description": "Your site description.", # used for the RSS feed's description.
+	"google_analytics_tag": "UA-11111-1", # used to track the site with Google Analytics.
+	"author_name": "Your Name",
+	"author_bio_link": "http://yoururl.net/about_you.html", # relative or absolute depending on where you keep it.
+	"amazon_tag": "mikesheanet-20", # Your tag to Amazon, used in the article footer and RSS feed.
+	"author_email": "you@youraddress.net", # The feedback email address.
+	"sidebar_on_article_pages": True, # Show the sidebar on all pages. Anything but 1 will only show it on the homepage.
+	"minify_html": False, # set to True to remove line breaks from the HTML output
+	#"navbar": False, # Either false or...
+	"navbar": """<ul class="navbar">
+<li class="navitem"><a href="./archive.html">archive</a></li>
+</ul>"""
+}
+
+nonentryfiles = [] # a list of text files you DON'T want to process.
+
 # Pueblo: Python Markdown Static Blogger
+#
+# License:
+#
+# Copyright (c) 2012 Michael E. Shea, http://mikeshea.net/pueblo.html
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 # 12 March 2012
 #
@@ -37,24 +80,8 @@
 #  better for SEO, and faster.
 #
 # Updated 29 March 2012: Removed iPhone stylesheet. Use @media in the CSS
-# 	
-
-config = {
-	"directory": "/absolute/path/to/data/files", # Your markdown files and the output go here. No trailing slash.
-	"site_url": "http://yoururl.net/", # site URL including an ending backslash.
-	"site_title": "Your Site Title", # used for the RSS feed's title.
-	"site_description": "Description of your site", # used for the RSS feed's description.
-	"google_analytics_tag": "UA-XXXXX-1", # used to track the site with Google Analytics.
-	"author_name": "Your Name",
-	"author_bio_link": "your_about_page.html", # relative or absolute depending on where you keep it.
-	"amazon_tag": "mikesheanet-20", # Your tag to Amazon, used in the article footer and RSS feed.
-	"twitter_tag": "twitterhandle", # The twitter tag to which you want tweeted articles referenced.
-	"author_email": "your@email.com", # The feedback email address.
-	"sidebar_on_article_pages": False, # Show the sidebar on all pages. Anything but 1 will only show it on the homepage.
-	"minify_html": False, # set to True to remove line breaks from the HTML output for speed
-}
-
-nonentryfiles = [] # a list of text files you DON'T want to process.
+#
+# Updated 31 May 2012: Removed Twitter tag. Let them do their own advertising.
 
 # Main Program
 import glob
@@ -94,7 +121,7 @@ def rebuildsite ():
 
 		content = markdown.markdown(re.sub("(Title:.*\n)|(Author:.*\n)|(Date:.*\n\n)|    ", "", content))
 		summary = re.sub("<[^<]+?>","", content)
-		summary = summary.replace("\n", " ")[0:200]
+		summary = summary.replace("\n", " ")[0:400]
 		htmlfilenamefull = htmlfilename = eachfile.replace(".txt", ".html")
 		htmlfilename = htmlfilename.replace(config["directory"]+"/", "")
 		postname = htmlfilename.replace(".html", "")
@@ -236,12 +263,14 @@ s.parentNode.insertBefore(ga, s);
 		htmlheader.append('''
 <div class="index_header">
 <h1>%(site_title)s</h1>
-<p class="site_description">%(site_description)s</p>
-</div>
-''' 	% {
+<p class="site_description">%(site_description)s</p>'''
+ 	  % {
 		'site_title': config["site_title"],
 		'site_description': config["site_description"],
 		} )
+		if config["navbar"]:
+			htmlheader.append(config["navbar"])
+		htmlheader.append('</div>')
 	else:
 		htmlheader.append('''
 <p class="return_link">
@@ -281,10 +310,9 @@ def buildhtmlfooter (type, urltitle):
 	if type == "article":
 		footer_parts.append(
 '''
-<p>Send feedback to <a href="mailto:%(email)s">%(email)s</a> or <a href="http://twitter.com/share?via=%(twitter_tag)s&text=%(urltitle)s">share on twitter</a>.</p>
+<p>Send feedback to <a href="mailto:%(email)s">%(email)s</a>.</p>
 '''		% {
 		'email': config['author_email'], 
-		'twitter_tag': config['twitter_tag'], 
 		'urltitle': urltitle,
 		})
 	footer_parts.append("\n</div>")

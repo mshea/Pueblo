@@ -1,8 +1,10 @@
-# Pueblo: Python Markdown Static Blogger
+Title: Pueblo: Python Markdown Blog Software
+Author: Mike Shea
+Date: 15 December 2011
 
 ## 30 second summary
 
-I decided to formalize the script I use to generate this website and my other big website, Sly Flourish and [release the sourcecode](http://mikeshea.net/pueblo_source.txt). [Pueblo](http://mikeshea.net/pueblo_source.txt) is a single python script that generates a blog of static HTML files from a directory full of [markdown](http://daringfireball.net/projects/markdown/) text files. It's small, fast, easy, secure, and extensible. While it doesn't have many of the features of bigger blog platforms, Pueblo lets you spend less time on website maintenance and more time writing.
+I decided to formalize the script I use to generate this website and my other big website, Sly Flourish and [release it](http://mikeshea.net/pueblo.zip). Pueblo is a single python script that generates a blog of static HTML files from a directory full of [markdown](http://daringfireball.net/projects/markdown/) text files. It's small, fast, easy, secure, and extensible. While it doesn't have many of the features of bigger blog platforms, Pueblo lets you spend less time on website maintenance and more time writing.
 
 ## A single simple script
 
@@ -14,7 +16,7 @@ At its core, Pueblo uses Markdown files to generate HTML. These Markdown files i
 
 The configuration lets you exclude certain .txt files in case you don't want them.
 
-The generated index.html file uses a stylesheet called "style.css" and another called "iphone.css" for a mobile display. The script also calls a file called "sidebar.html" to display aside content.
+The generated index.html file uses a stylesheet called "style.css" that uses [responsive web design](http://www.alistapart.com/articles/responsive-web-design/) to fit well onto many screens. The script also calls a file called "sidebar.html" to display aside content.
 
 ## The advantages of static HTML generation
 

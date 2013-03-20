@@ -1,331 +1,122 @@
-#!/usr/local/bin/python
+## To Do:
+## Redo CSS
+## Test with full set of documents
 
-config = {
-	"directory": "/directory/to/your/markdown/files", # Your markdown files and the output go here. No trailing slash.
-	"site_url": "http://yoururl.com/", # site URL including an ending backslash.
-	"site_title": "your title", # used for the RSS feed's title.
-	"site_description": "Your site description.", # used for the RSS feed's description.
-	"google_analytics_tag": "UA-11111-1", # used to track the site with Google Analytics.
-	"author_name": "Your Name",
-	"author_bio_link": "http://yoururl.net/about_you.html", # relative or absolute depending on where you keep it.
-	"amazon_tag": "mikesheanet-20", # Your tag to Amazon, used in the article footer and RSS feed.
-	"author_email": "you@youraddress.net", # The feedback email address.
-	"sidebar_on_article_pages": True, # Show the sidebar on all pages. Anything but 1 will only show it on the homepage.
-	"minify_html": False, # set to True to remove line breaks from the HTML output
-	#"navbar": False, # Either false or...
-	"navbar": """<ul class="navbar">
-<li class="navitem"><a href="./archive.html">archive</a></li>
-</ul>"""
-}
-
-nonentryfiles = [] # a list of text files you DON'T want to process.
-
-# Pueblo: Python Markdown Static Blogger
-#
-# License:
-#
-# Copyright (c) 2012 Michael E. Shea, http://mikeshea.net/pueblo.html
-#
-# Permission is hereby granted, free of charge, to any person obtaining
-# a copy of this software and associated documentation files (the
-# "Software"), to deal in the Software without restriction, including
-# without limitation the rights to use, copy, modify, merge, publish,
-# distribute, sublicense, and/or sell copies of the Software, and to
-# permit persons to whom the Software is furnished to do so, subject to
-# the following conditions:
-#
-# The above copyright notice and this permission notice shall be
-# included in all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-# 12 March 2012
-#
-# A single Python script to build a simple blog from a directory full of markdown files.
-#
-# This script requires the Markdown python implementation available at:
-# http://pypi.python.org/pypi/Markdown/2.1.0
-#
-# This script requires markdown files using the following multimarkdown metadata as the first three lines
-# of the processed .txt markdown files as follows:
-#
-# Title: the Title of your Document
-# Author: Joe Blow
-# Date: 15 December 2011
-#
-# The program will generate an index.html homepage file, an archive.html archive file, 
-# and an index.xml RSS file.
-#
-# Header and footer data can be edited in the variables throughout the program. 
-#
-# This script expects the following additional files:
-# style.css: The main site's stylesheet.
-# iphone.css: The mobile version of the site's stylesheet.
-# sidebar.html: A secondary set of data usually displayed as a sidebar.
-#
-# Instructions
-# Install the Markdown python module.
-# Configure this script by changing the configuration variables below.
-# Put your static markdown .txt files in the configured directory
-# Run the script either manually, with a regular cronjob, or as a CGI script.
-# View the output at index.html
-#
-# Updated 12 March 2012: Removed header image. Text is good enough, 
-#  better for SEO, and faster.
-#
-# Updated 29 March 2012: Removed iPhone stylesheet. Use @media in the CSS
-#
-# Updated 31 May 2012: Removed Twitter tag. Let them do their own advertising.
-
-# Main Program
-import glob
-import re
-import rfc822
-import time
-import cgi
-import datetime
 import markdown
-from time import gmtime, strftime, localtime, strptime
+import jinja2
+import re
+import datetime
+import time
+import glob
+import cgi
 
-def rebuildsite ():
-	textfiles = glob.glob(config["directory"]+"//*.txt")
-	for nonfile in nonentryfiles:
-		textfiles.remove(config["directory"]+"/"+nonfile)
-	indexdata = []
+class Article:
+	def __init__(self, local_dir, local_file):
+		local_file = local_file.replace('/','')
+		self.file_text = ''
+		self.local_file_name = local_file
+		with open(local_dir + '/' + local_file) as f:
+			self.lines = f.readlines()
+		self.file_text = ''.join(self.lines[4:])		
+
+	def text(self):
+		return self.file_text
 	
-	# Rip through the stack of .txt markdown files and build HTML pages from it.
-	for eachfile in textfiles:
-		eachfile = eachfile.replace(config["directory"]+"\\", "")
-		content = open(eachfile).read()
-		lines = re.split("\n", content)
-		title = re.sub("(Title: )|(  )", "", lines[0])
+	def title(self):
+		title = self.lines[0].strip()
+		title = re.sub('\n','',title)
+		title = re.sub('Title: ','',title)
 		title = cgi.escape(title)
-		urltitle = title.replace("&", "%26")
-		author = lines[1].replace("Author: ","")
-		date = re.sub("(  )|(\n)|(Date: )","",lines[2])
-		numdate = strftime("%Y-%m-%d", strptime(date, "%d %B %Y"))
+		return title
 
-		# Add Troll and Toad referral link for Sly Flourish - 
-		# This is some messy stuff just used for my site so you can likely remove it and never worry.
-		# I only needed it to add a specific referral to all links in the site.
-		content = re.sub("\?associateid=120_1", "", content) # Remove any existing referrals.
-		content = re.sub("http://www\.trollandtoad\.com/(.*?)\.html", 
-		                 "http://www.trollandtoad.com/\\1.html?associateid=120_1", content)
-		# End of hacky referral code
+	def html_filename(self):
+		html_filename = re.sub('.txt','.html',self.local_file_name)
+		return html_filename
 
-		content = markdown.markdown(re.sub("(Title:.*\n)|(Author:.*\n)|(Date:.*\n\n)|    ", "", content))
-		summary = re.sub("<[^<]+?>","", content)
-		summary = summary.replace("\n", " ")[0:400]
-		htmlfilenamefull = htmlfilename = eachfile.replace(".txt", ".html")
-		htmlfilename = htmlfilename.replace(config["directory"]+"/", "")
-		postname = htmlfilename.replace(".html", "")
-		# Build the HTML file, add a bit of footer text.
-		htmlcontent = [buildhtmlheader("article", title, date)]
-		htmlcontent.append(content)
-		htmlcontent.append(buildhtmlfooter("article", urltitle))
-		htmlfile = open(htmlfilenamefull, "w")
-		htmlfile.write(minify("".join(htmlcontent)))
-		htmlfile.close()
-		if numdate <= datetime.datetime.now().strftime("%Y-%m-%d"):
-			indexdata.append([[numdate],[title],[summary],[htmlfilename],[content]])
+	def author(self):
+		title = self.lines[1].strip()
+		title = re.sub('\n','',title)
+		title = re.sub('Author: ','',title)
+		return title
 
-	# The following section builds index.html, archive.html and index.xml.	
-	indexdata.sort()
-	indexdata.reverse()
-	indexbody=archivebody=rssbody=""
-	count=0
+	def date_text(self):
+		date_text = self.lines[2].strip()
+		date_text = re.sub('\n','',date_text)
+		date_text = re.sub('Date: ','',date_text)
+		return date_text
 	
-	for indexrow in indexdata:
-		dateobject = strptime(indexrow[0][0], "%Y-%m-%d")
-		rssdate = strftime("%a, %d %b %Y 06:%M:%S +0000", dateobject)
-		nicedate = strftime("%d %B %Y", dateobject)
-		articleitem = '''
-<h2><a href="%(article_link)s">%(article_title)s</a></h2>
-<p>%(date)s - %(summary)s...</p>
-'''		% {
-		'article_link': indexrow[3][0],
-		'article_title': indexrow[1][0],
-		'date': nicedate,
-		'summary': indexrow[2][0],
-		}
+	def date_datetime(self):
+		date_txt = self.date_text()
+		date_obj = datetime.datetime.strptime(date_txt, '%d %B %Y')
+		return date_obj
 
-		rssitem = '''
-<item>
-<title>%(title)s</title>
-<link>%(link)s</link>
-<guid>%(link)s</guid>
-<pubDate>%(pubdate)s</pubDate>
-<description>%(description)s</description>
-<content:encoded>
-<![CDATA[%(cdata)s]]>
-</content:encoded>
-</item>
-'''		% {
-		'title': indexrow[1][0],
-		'link': config["site_url"]+indexrow[3][0],
-		'pubdate': rssdate,
-		'description': indexrow[2][0],
-		'cdata': indexrow[4][0],
-		}
-
-		count = count + 1
-		if count < 15:
-			rssbody = rssbody + rssitem
-		if count < 30:
-			indexbody = indexbody+articleitem
-		archivebody = archivebody + articleitem
-	sidebardata = open(config["directory"]+"/sidebar.html").read()
-	rssdatenow = rfc822.formatdate()
-	
-	indextitle = config["site_title"] + ": " + config["site_description"]
-
-	indexdata = [buildhtmlheader("index", indextitle, "none")]
-	indexdata.append(indexbody)
-	indexdata.append("<h2><a href=\"archive.html\">View All %(article_count)s Articles</a></h2>\n" 
-		% { 'article_count': str(count) })
-	indexdata.append(buildhtmlfooter("index", ""))
-	indexfile = open(config["directory"]+"/index.html", "w").write(minify("".join(indexdata)))
-
-	archivedata = [buildhtmlheader("archive", config["site_title"]+" Article Archive", "none")]
-	archivedata.append(archivebody)
-	archivedata.append(buildhtmlfooter("archive", ""))
-	archivefile = open (config["directory"]+"/archive.html", "w").write(minify("".join(archivedata)))
-
-	rsscontent = '''<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0"
-xmlns:atom="http://www.w3.org/2005/Atom"
-xmlns:content="http://purl.org/rss/1.0/modules/content/"
-xmlns:dc="http://purl.org/dc/elements/1.1/\"
->
-
-<channel>
-<title>%(site_title)s</title>
-<link>%(site_url)s</link>
-<description>%(site_description)s</description>
-<pubDate>%(rssdatenow)s</pubDate>
-<language>en</language>
-<atom:link href="%(site_url)sindex.xml" rel="self" type="application/rss+xml" />
-%(rssbody)s
-</channel>
-</rss>
-'''	% {
-	'site_url': config["site_url"],
-	'site_title': config["site_title"],
-	'site_description': config["site_description"],
-	'rssdatenow': rssdatenow,
-	'rssbody': rssbody,
-	}
-	
-	rssfile = open(config["directory"]+"/index.xml", "w").write(minify(rsscontent))
+	def date_rss(self):
+		date = time.strptime(self.date_text(), '%d %B %Y')
+		rss_date = time.strftime('%a, %d %b %Y 06:%M:%S +0000', date)
+		return rss_date
 		
-# Subroutine to build out the page's HTML header
-def buildhtmlheader(type, title, date):
-	htmlheader = ['''
-<!DOCTYPE html>
-<html>
-<head>
-<title>%(title)s</title>
-<link rel="stylesheet" type="text/css" href="style.css">
-<link rel="alternate" type="application/rss+xml" title="%(title)s" href="index.xml">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="viewport" content="user-scalable=yes, width=device-width" />
-<script type="text/javascript">
-var _gaq = _gaq || [];
-_gaq.push(['_setAccount', '%(google_analytics_tag)s']);
-_gaq.push(['_trackPageview']);
-(function() {  var ga = document.createElement('script');
- ga.type = 'text/javascript';
- ga.async = true;
-ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-var s = document.getElementsByTagName('script')[0];
-s.parentNode.insertBefore(ga, s);
-})();
-</script>
-</head>
-<body>
-''' 	% {
-		'title': title, 
-		'google_analytics_tag': config["google_analytics_tag"], 
-		} ]
+	def summary(self):
+		summary = re.sub('<[^<]+?>','', self.html())[0:200]
+		summary = re.sub('\n',' ',summary)
+		return summary
+		
+	def html(self):
+		md = markdown.Markdown()
+		converted_text = md.convert(self.file_text).encode('utf-8')
+		return converted_text
+		
+class FileList:
+	def __init__(self, dir, ignore_list):
+		self.textfiles = glob.glob(dir+"/*.txt")
+		for ignored_file in ignore_list:
+			self.textfiles.remove(dir+ignored_file)
 
-	if config["sidebar_on_article_pages"] != True and type == "article":
-		htmlheader.append("\n<div class=\"article_container\">\n")
-	else:
-		htmlheader.append("\n<div class=\"container\">\n")
+	def files(self):
+		return self.textfiles
+		
+class Site:
+	def load_article_data(self, dir, ignore_list):
+		file_list = FileList(dir, ignore_list)
+		articles = []
+		for file in file_list.files():
+			article = Article(dir, file.replace(dir,''))
+			articles.append({
+					'title': article.title(),
+					'datetime': article.date_datetime(),
+					'text': article.text(),
+					'summary': article.summary(),
+					'html': article.html(), 
+					'date_text': article.date_text(),
+					'html_filename': article.html_filename(),
+					'date_rss': article.date_rss()
+					},)
+		articles = sorted(articles, key=lambda k: k['datetime'], reverse=True)
+		return articles
 
-	if type == "index":
-		htmlheader.append('''
-<div class="index_header">
-<h1>%(site_title)s</h1>
-<p class="site_description">%(site_description)s</p>'''
- 	  % {
-		'site_title': config["site_title"],
-		'site_description': config["site_description"],
-		} )
-		if config["navbar"]:
-			htmlheader.append(config["navbar"])
-		htmlheader.append('</div>')
-	else:
-		htmlheader.append('''
-<p class="return_link">
-<a href="index.html">%(site_title)s</a>
-</p>
-'''		% {
-		'site_title': config["site_title"]
-		} )
+	def build_html_page(self, data, template, output_file, dir):
+		with open(template) as f:
+			template = jinja2.Template(f.read())
+		with open(dir + '/' + output_file,'w') as i:
+			i.write(template.render(data = data))
+		return True
 
-	# What does the rest of the header look like for each page type?
-	if type == "index":
-		htmlheader.append("\n<div class=\"article_list\">\n")
-	elif type == "archive":
-		htmlheader.append("\n<div class=\"article_list\">\n<h1>Article Archive</h1>\n")
-	elif type == "article":
-		htmlheader.append('''
-<div class="article">
-<h1>%(title)s</h1>
-<p>by <a href="%(author_bio_link)s">%(author_name)s</a> on %(date)s</p>
-'''		% {
-		'author_bio_link': config["author_bio_link"],
-		'title': title,
-		'author_name': config["author_name"],
-		'date': date,
-		} )
-	return "".join(htmlheader)
-
-# Remove all line breaks for minified HTML and XML output.
-def minify(content):
-	if config["minify_html"]:
-		content = re.sub("\n","",content)
-	return content
-	
-# Subroutine to build out the footer.
-def buildhtmlfooter (type, urltitle):
-	footer_parts = []
-	if type == "article":
-		footer_parts.append(
-'''
-<p>Send feedback to <a href="mailto:%(email)s">%(email)s</a>.</p>
-'''		% {
-		'email': config['author_email'], 
-		'urltitle': urltitle,
-		})
-	footer_parts.append("\n</div>")
-
-	sidebardata = open(config["directory"]+"/sidebar.html").read()
-
-	if type == "index" or type == "archive" or config["sidebar_on_article_pages"]:
-		footer_parts.append(sidebardata)
-	footer_parts.append("\n</body>\n</html>")
-
-	return "".join(footer_parts)
-
-# This program is designed to run as a CGI script so you can rebuild your site by hitting a URL.
-print "Content-type: text/html\n\n"
-rebuildsite()
-print "<html><head><title>Site Rebuilt</title></head><body><h1>Site Rebuilt</h1></body></html>"
+	def build_site(self, params):
+		dir = params['DIR']
+		template_dir = params['TEMPLATE_DIR']
+		index_template = template_dir + '/index_template.txt'
+		archive_template = template_dir + '/archive_template.txt'
+		rss_template = template_dir + '/rss_template.txt'
+		article_template = template_dir + '/article_template.txt'
+		index_output = '/index.html'
+		archive_output = '/archive.html'
+		rss_output = '/index.xml'		
+		site = Site()
+		
+		articles = site.load_article_data(dir, params['IGNORE_LIST'])		
+		for article in articles:
+			output = article['html_filename']
+			site.build_html_page(article, article_template, output, dir)
+		site.build_html_page(articles, index_template, index_output, dir)
+		site.build_html_page(articles, archive_template, archive_output, dir)
+		site.build_html_page(articles, rss_template, rss_output, dir)	
+		return True

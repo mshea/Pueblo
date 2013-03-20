@@ -1,0 +1,17 @@
+#!/usr/local/bin/python
+
+import pueblo
+
+PARAMS = {
+	'DIR': '/dir/to/your/html/files/', # no final slash
+	'TEMPLATE_DIR': '/dir/to/store/your/templates', # no final slash
+	'IGNORE_LIST': ['ignorethis.txt']
+	}
+
+print "Content-type: text/html\n\n"
+
+site = pueblo.Site()
+site.build_site(PARAMS)
+
+print "<html><head><title>Site Rebuilt</title></head><body><h1>Site Rebuilt</h1></body></html>"
+

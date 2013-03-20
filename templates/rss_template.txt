@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+xmlns:atom="http://www.w3.org/2005/Atom"
+xmlns:content="http://purl.org/rss/1.0/modules/content/"
+xmlns:dc="http://purl.org/dc/elements/1.1/"
+>
+<channel>
+<title>yoursite.com</title>
+<link>http://yoursite.com/</link>
+<description>Your site description</description>
+<language>en</language>
+<atom:link href="http://yoursite.com/index.xml" rel="self" type="application/rss+xml" />
+{% for i in range(25) %}
+<item>
+<title>{{ data[i].title }}</title>
+<link>http://yoursite.com/{{ data[i].html_filename }}</link>
+<guid>http://yoursite.com/{{ data[i].html_filename }}</guid>
+<pubDate>{{ data[i].date_rss }}</pubDate>
+<description>{{ data[i].summary }}</description>
+<content:encoded>
+<![CDATA[{{ data[i].html }}]]>
+</content:encoded>
+</item>
+{% endfor %}
+</channel>
+</rss>

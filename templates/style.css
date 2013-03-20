@@ -1,0 +1,105 @@
+body {
+font-family: Georgia, serif;
+line-height: 1.5em;
+font-size: 1.2em;
+color: #111;
+width: auto;
+max-width: 33em;
+margin: auto;
+padding: 1em;
+}
+
+blockquote {
+font-style: italic;
+}
+
+h1, h2, h3 {
+font-weight: normal;
+font-family: Verdana, Geneva, sans-serif;
+color: #222;
+}
+
+h1 {
+font-size: 1.5em;
+line-height:1.2em;
+margin-top: .5em;
+margin-bottom: .5em;
+}
+
+h2, h3 {
+font-size:1.2em;
+line-height:1.2em;
+padding: 0;
+margin: 0;
+}
+
+img {
+border:0;
+width: 100%
+}
+
+.site_description {
+font-size: .8em;
+font-style: italic;
+margin-bottom: 5px;
+margin-top: 5px;
+}
+
+.navbar {
+margin-top: 0;
+margin-bottom: .5em;
+margin-left: 0;
+padding: 0;
+list-style-type: none;
+}
+
+.navbar li {
+font-size: .8em;
+display: inline;
+}
+
+p.return_link {
+margin: 0;
+}
+
+table {
+max-width: 100%;
+}
+
+table, th, td {
+padding: .1em .5em .1em .5em;
+font-family: helvetica, arial, sans;
+line-height: 1.2em;
+border: 1px solid #aaa;
+border-collapse: collapse;
+text-align: center;
+font-size: .9em;
+}
+
+/* data table css from http://css-tricks.com/responsive-data-tables/ */
+
+table.datatable { 
+  width: 100%; 
+  border-collapse: collapse;
+  margin-bottom: 1em;
+}
+/* Zebra striping */
+.datatable tr:nth-of-type(odd) { 
+  background: #eee; 
+}
+.datatable th { 
+  background: #333; 
+  color: white; 
+  font-weight: bold; 
+}
+.datatable td, th {
+  padding: .1em .1em .1em .1em;
+  border: 1px solid #ccc; 
+  text-align: center; 
+}
+
+  .time {white-space: nowrap;}
+  .schedule_table table {border-collapse:collapse;}
+  .schedule_table table, th, td { border: 1px solid black; border-collapse: true; padding: .5em; }
+  td.activity { font-size: .9em; line-height: 1.2em; text-align: left; }
+  .activity {max-width: 25em;}

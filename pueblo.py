@@ -1,7 +1,3 @@
-## To Do:
-## Redo CSS
-## Test with full set of documents
-
 import markdown
 import jinja2
 import re

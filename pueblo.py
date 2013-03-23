@@ -38,7 +38,7 @@ class Site:
 			article = Article(file)
 			if article.datetime < datetime.datetime.now():
 				articles.append(article)
-		articles = sorted(articles, key=lambda k: k.datetime, reverse=True)
+		articles.sort(key=lambda k: k.datetime, reverse=True)
 		return articles
 
 	def build_from_template(self, data, template, output_file, dir):

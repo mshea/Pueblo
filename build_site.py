@@ -3,8 +3,8 @@
 import pueblo
 
 PARAMS = {
-	'DIR': '/dir/to/your/html/files/', # no final slash
-	'TEMPLATE_DIR': '/dir/to/store/your/templates', # no final slash
+	'DIR': '/dir/to/your/html/files/',
+	'TEMPLATE_DIR': '/dir/to/store/your/templates/',
 	'IGNORE_LIST': ['ignorethis.txt']
 	}
 

@@ -12,6 +12,6 @@
 <div class="article_list">
 {% for i in range(30) %}
 <h2><a href="{{ data[i].html_filename }}">{{ data[i].title }}</a></h2>
-<p>{{ data[i].date_text }}: {{ data[i].summary }} <a href="{{ data[i].html_filename }}">...</a></p>
+<p>{{ data[i].date_txt }}: {{ data[i].summary }} <a href="{{ data[i].html_filename }}">...</a></p>
 {% endfor %}
 <h2><a href="archive.html">View All Articles</a></h2>

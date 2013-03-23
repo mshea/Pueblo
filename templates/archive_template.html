@@ -7,5 +7,5 @@
 <h1>Article Archive</h1>
 {% for article in data %}
 <h2><a href="{{ article.html_filename }}">{{ article.title }}</a></h2>
-<p>{{ article.date_text }}: {{ article.summary }} <a href="{{ article.html_filename }}">...</a></p></p>
+<p>{{ article.date_txt }}: {{ article.summary }} <a href="{{ article.html_filename }}">...</a></p></p>
 {% endfor %}

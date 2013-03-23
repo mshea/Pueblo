@@ -5,106 +5,67 @@ import datetime
 import time
 import glob
 import cgi
+import os
 
 class Article:
-	def __init__(self, local_dir, local_file):
-		local_file = local_file.replace('/','')
-		self.local_file_name = local_file
-		with open(local_dir + '/' + local_file) as f:
-			self.lines = f.readlines()
-		self.file_text = ''.join(self.lines[4:])		
-
-	def text(self):
-		return self.file_text
-	
-	def title(self):
-		title = self.get_metadata(self.lines[0])
-		return title
-
-	def html_filename(self):
-		html_filename = re.sub('.txt','.html',self.local_file_name)
-		return html_filename
-
-	def date_text(self):
-		date_text = self.get_metadata(self.lines[2])
-		return date_text
-	
-	def date_datetime(self):
-		date_txt = self.date_text()
-		date_obj = datetime.datetime.strptime(date_txt, '%d %B %Y')
-		return date_obj
-
-	def date_rss(self):
-		date = time.strptime(self.date_text(), '%d %B %Y')
-		rss_date = time.strftime('%a, %d %b %Y 06:%M:%S +0000', date)
-		return rss_date
-		
-	def summary(self):
-		summary = re.sub('<[^<]+?>','', self.html())[0:200]
-		summary = re.sub('\n',' ',summary)
-		return summary
-		
-	def html(self):
+	def __init__(self, file):
 		md = markdown.Markdown()
-		converted_text = md.convert(self.file_text).encode('utf-8')
-		return converted_text
+		with open(file) as f:
+			self.lines = f.readlines()
+		fulltext = ''.join(self.lines)
+		self.text = ''.join(self.lines[4:])
+		self.html_filename = os.path.basename(file).replace('.txt','.html')
+		self.title = re.search('Title: (.*)\n',fulltext).group(1).strip()
+		self.date_txt = re.search('Date: (.*)\n',fulltext).group(1).strip()
+		self.author = re.search('Author: (.*)\n',fulltext).group(1).strip()
+		self.datetime = datetime.datetime.strptime(self.date_txt, '%d %B %Y')
+		self.html = md.convert(self.text).encode('utf-8')
+		self.summary = re.sub('<[^<]+?>','', 
+				self.html)[0:200].replace('\n', ' ')
+		date = time.strptime(self.date_txt, '%d %B %Y')
+		self.date_rss = time.strftime('%a, %d %b %Y 06:%M:%S +0000', date)
 	
-	def get_metadata(self,line):
-		element = re.sub('\n|Author: |Date: |Title: ','',line)
-		element = cgi.escape(element).strip()
-		return element
-		
-class FileList:
-	def __init__(self, dir, ignore_list):
-		self.textfiles = glob.glob(dir+"/*.txt")
-		for ignored_file in ignore_list:
-			self.textfiles.remove(dir+ignored_file)
-
-	def files(self):
-		return self.textfiles
-		
 class Site:
+	def get_files(self, dir, ignore_list):
+		textfiles = glob.glob(os.path.join(dir, '*.txt'))
+		for ignored_file in ignore_list:
+			textfiles.remove(dir+ignored_file)
+		return textfiles
+
 	def load_articles(self, dir, ignore_list):
-		file_list = FileList(dir, ignore_list)
 		articles = []
-		for file in file_list.files():
-			article = Article(dir, file.replace(dir,''))
-			articles.append({
-					'title': article.title(),
-					'datetime': article.date_datetime(),
-					'text': article.text(),
-					'summary': article.summary(),
-					'html': article.html(), 
-					'date_text': article.date_text(),
-					'html_filename': article.html_filename(),
-					'date_rss': article.date_rss()
-					},)
-		articles = sorted(articles, key=lambda k: k['datetime'], reverse=True)
+		for file in self.get_files(dir, ignore_list):
+			article = Article(file)
+			if article.datetime < datetime.datetime.now():
+				articles.append(article)
+		articles = sorted(articles, key=lambda k: k.datetime, reverse=True)
 		return articles
 
 	def build_from_template(self, data, template, output_file, dir):
 		with open(template) as f:
 			template = jinja2.Template(f.read())
-		with open(dir + '/' + output_file,'w') as i:
+		with open(os.path.join(dir, output_file),'w') as i:
 			i.write(template.render(data = data))
 		return True
 
 	def build_site(self, params):
-		dir = params['DIR']
-		template_dir = params['TEMPLATE_DIR']
-		index_template = template_dir + '/index_template.html'
-		archive_template = template_dir + '/archive_template.html'
-		rss_template = template_dir + '/rss_template.xml'
-		article_template = template_dir + '/article_template.html'
-		index_output = '/index.html'
-		archive_output = '/archive.html'
-		rss_output = '/index.xml'		
+		article_template = os.path.join(params['TEMPLATE_DIR'], 
+				'article_template.html')
 		site = Site()
-		articles = site.load_articles(dir, params['IGNORE_LIST'])		
+		articles = site.load_articles(params['DIR'], params['IGNORE_LIST'])		
 		for article in articles:
-			output = article['html_filename']
-			site.build_from_template(article, article_template, output, dir)
-		site.build_from_template(articles, index_template, index_output, dir)
-		site.build_from_template(articles, archive_template, archive_output, dir)
-		site.build_from_template(articles, rss_template, rss_output, dir)	
-		return True
+			output = article.html_filename
+			site.build_from_template(article, article_template, output, 
+					params['DIR'])
+
+		pages_to_build = (
+			(os.path.join(params['TEMPLATE_DIR'], 'index_template.html'),
+				'index.html'),
+			(os.path.join(params['TEMPLATE_DIR'], 'archive_template.html'),
+				'archive.html'),
+			(os.path.join(params['TEMPLATE_DIR'], 'rss_template.xml'),
+				'index.xml')
+			)
+		for page in pages_to_build:
+			site.build_from_template(articles, page[0], page[1], 
+					params['DIR'])

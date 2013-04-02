@@ -7,7 +7,7 @@ import glob
 import cgi
 import os
 
-class Article:
+class Article(object):
 	def __init__(self, file):
 		md = markdown.Markdown()
 		with open(file) as f:
@@ -25,7 +25,7 @@ class Article:
 		date = time.strptime(self.date_txt, '%d %B %Y')
 		self.date_rss = time.strftime('%a, %d %b %Y 06:%M:%S +0000', date)
 	
-class Site:
+class Site(object):
 	def get_files(self, dir, ignore_list):
 		textfiles = glob.glob(os.path.join(dir, '*.txt'))
 		for ignored_file in ignore_list:
@@ -46,7 +46,6 @@ class Site:
 			template = jinja2.Template(f.read())
 		with open(os.path.join(dir, output_file),'w') as i:
 			i.write(template.render(data = data))
-		return True
 
 	def build_site(self, params):
 		article_template = os.path.join(params['TEMPLATE_DIR'], 
@@ -55,8 +54,10 @@ class Site:
 		articles = site.load_articles(params['DIR'], params['IGNORE_LIST'])		
 		for article in articles:
 			output = article.html_filename
-			site.build_from_template(article, article_template, output, 
-					params['DIR'])
+			if article.datetime > datetime.datetime.now() - datetime.timedelta(
+					days=params['PAGEBUILD_DELTA']):
+				site.build_from_template(article, article_template, output, 
+						params['DIR'])
 
 		pages_to_build = (
 			(os.path.join(params['TEMPLATE_DIR'], 'index_template.html'),

@@ -15,7 +15,9 @@ class Article(object):
 		fulltext = ''.join(self.lines)
 		self.text = ''.join(self.lines[4:])
 		self.html_filename = os.path.basename(file).replace('.txt','.html')
-		self.title = re.search('Title: (.*)\n',fulltext).group(1).strip()
+		self.title = cgi.escape(
+				re.search('Title: (.*)\n',fulltext).group(1).strip()
+				)
 		self.date_txt = re.search('Date: (.*)\n',fulltext).group(1).strip()
 		self.author = re.search('Author: (.*)\n',fulltext).group(1).strip()
 		self.datetime = datetime.datetime.strptime(self.date_txt, '%d %B %Y')
